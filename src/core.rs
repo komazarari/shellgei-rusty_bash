@@ -48,9 +48,6 @@ fn restore_signal(sig: Signal) {
 
 impl ShellCore {
     pub fn new() -> ShellCore {
-        ignore_signal(Signal::SIGINT);
-        ignore_signal(Signal::SIGTERM);
-
         let mut core = ShellCore{
             history: Vec::new(),
             flags: String::new(),
@@ -66,6 +63,9 @@ impl ShellCore {
         core.set_initial_vars();
 
         if is_interactive(process::id()) {
+            ignore_signal(Signal::SIGINT);
+            ignore_signal(Signal::SIGTERM);
+
             core.flags += "i";
             core.tty_fd = fcntl::fcntl(2, fcntl::F_DUPFD_CLOEXEC(255))
                 .expect("Can't allocate fd for tty FD");
