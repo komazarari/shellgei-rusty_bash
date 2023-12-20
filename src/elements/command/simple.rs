@@ -4,6 +4,7 @@
 use crate::{ShellCore, Feeder};
 use super::{Command, Pipe, Redirect};
 use crate::elements::command;
+use crate::elements::word::Word;
 use nix::unistd;
 use std::ffi::CString;
 use std::process;
@@ -21,7 +22,7 @@ fn reserved(w: &str) -> bool {
 #[derive(Debug)]
 pub struct SimpleCommand {
     text: String,
-    args: Vec<String>,
+    args: Vec<Word>,
     redirects: Vec<Redirect>,
     force_fork: bool,
 }
@@ -34,7 +35,7 @@ impl Command for SimpleCommand {
 
         if self.force_fork 
         || pipe.is_connected() 
-        || ! core.builtins.contains_key(&self.args[0]) {
+        || ! core.builtins.contains_key(&self.args[0].text) {
             self.fork_exec(core, pipe)
         }else{
             self.nofork_exec(core);
@@ -43,15 +44,17 @@ impl Command for SimpleCommand {
     }
 
     fn run_command(&mut self, core: &mut ShellCore, fork: bool) {
+        let mut args = self.args.iter().map(|e| e.text.clone()).collect();
+
         if ! fork {
-            core.run_builtin(&mut self.args);
+            core.run_builtin(&mut args);
             return;
         }
 
-        if core.run_builtin(&mut self.args) {
+        if core.run_builtin(&mut args) {
             core.exit()
         }else{
-            Self::exec_external_command(&mut self.args)
+            Self::exec_external_command(&mut args)
         }
     }
 
@@ -107,7 +110,7 @@ impl SimpleCommand {
         }
  
         ans.text += &word.clone();
-        ans.args.push(word);
+        ans.args.push(Word{text: word});
         true
     }
 
