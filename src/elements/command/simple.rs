@@ -110,7 +110,7 @@ impl SimpleCommand {
         }
  
         ans.text += &word.clone();
-        ans.args.push(Word{text: word});
+        ans.args.push(Word::new(word));
         true
     }
 

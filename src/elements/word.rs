@@ -4,4 +4,14 @@
 #[derive(Debug)]
 pub struct Word {
     pub text: String,
+    pub subwords: Vec<Word>,
+}
+
+impl Word {
+    pub fn new(s: String) -> Word {
+        Word {
+            text: s,
+            subwords: vec![],
+        }
+    }
 }
