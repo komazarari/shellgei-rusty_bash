@@ -3,11 +3,12 @@
 
 use crate::{Feeder, ShellCore};
 use crate::elements::subword;
+use crate::elements::subword::Subword;
 
 #[derive(Debug)]
 pub struct Word {
     pub text: String,
-    pub subwords: Vec<String>,
+    pub subwords: Vec<Box<dyn Subword>>,
 }
 
 impl Word {
@@ -26,6 +27,7 @@ impl Word {
 
         let mut ans = Word::new();
         ans.text = sw.get_text();
+        ans.subwords.push(sw);
         Some(ans)
     }
 }
