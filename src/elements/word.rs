@@ -29,6 +29,7 @@ impl Word {
         if ans.text.len() == 0 {
             None
         }else{
+            dbg!("{:?}", &ans);
             Some(ans)
         }
     }

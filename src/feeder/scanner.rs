@@ -48,7 +48,7 @@ impl Feeder {
 
         let ng = match core.word_nest.last().unwrap().as_str() {
             "{" => " \t\n;&|()<>{},",
-            _ => " \t\n;&|()<>",
+            _ => " \t\n;&|()<>{",
         };
 
         let mut next_line = false; 
