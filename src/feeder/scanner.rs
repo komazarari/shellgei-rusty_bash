@@ -46,7 +46,7 @@ impl Feeder {
             return 0;
         }
 
-        let ng = match core.word_nest.last().unwrap().0.as_ref() {
+        let ng = match core.word_nest.last().unwrap().as_str() {
             "{" => " \t\n;&|()<>{},",
             _ => " \t\n;&|()<>",
         };

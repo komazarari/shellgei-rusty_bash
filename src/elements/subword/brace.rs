@@ -24,30 +24,44 @@ impl BraceSubword {
     }
 
     fn eat_word(feeder: &mut Feeder, ans: &mut BraceSubword, core: &mut ShellCore) -> bool {
-        let w = match Word::parse(feeder, core) {
-            Some(w) => w,
-            _       => return false,
-        };
-
-        ans.text += &w.text;
-        ans.words.push(w);
-        true
+        match Word::parse(feeder, core) {
+            Some(w) => {
+                ans.text += &w.text;
+                ans.words.push(w);
+                true
+            },
+            _       => false,
+        }
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<BraceSubword> {
         if ! feeder.starts_with("{") {
             return None;
         }
-        //TODO: implement rewind
+        feeder.set_backup();
 
-        core.word_nest.push(("{".to_string(), "}".to_string()));
+        core.word_nest.push("{".to_string());
         let mut ans = Self::new();
         ans.text = feeder.consume(1); // {
         while Self::eat_word(feeder, &mut ans, core) {
-            //TODO
+            if feeder.starts_with(",") {
+                ans.text += &feeder.consume(1); 
+                continue;
+            }
+
+            if feeder.starts_with("}") {
+                ans.text += &feeder.consume(1); 
+            }
+            break;
         }
 
         core.word_nest.pop();
-        Some(ans)
+        if ! ans.text.ends_with("}") || ans.words.len() < 2 {
+            feeder.rewind();
+            None
+        }else {
+            feeder.pop_backup();
+            Some(ans)
+        }
     }
 }
