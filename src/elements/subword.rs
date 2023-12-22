@@ -1,13 +1,10 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-// pub mod UnquotedSubword;
-// pub mod SingleQuotedSubword;
-// pub mod DoubleQuotedSubword;
-// pub mod Variable;
+pub mod unquoted;
 
-use crate::ShellCore;
-use crate::elements::word::Word;
+use crate::{Feeder, ShellCore};
+use crate::elements::subword::unquoted::UnquotedSubword;
 use std::fmt;
 use std::fmt::Debug;
 
@@ -18,7 +15,10 @@ impl Debug for dyn Subword {
 }
 
 pub trait Subword {
-    fn eval(&mut self, _: &mut ShellCore) -> Word;
-    fn brace_expansion(&mut self, _: &mut ShellCore) -> Vec<Word>;
-    fn expansion(&mut self, _: &mut ShellCore) -> Vec<Word>;
+    fn get_text(&self) -> String;
+}
+
+pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Subword>> {
+    if let Some(a) = UnquotedSubword::parse(feeder, core){ Some(Box::new(a)) }
+    else{ None }
 }

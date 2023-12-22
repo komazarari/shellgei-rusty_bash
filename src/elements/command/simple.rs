@@ -101,7 +101,7 @@ impl SimpleCommand {
     fn eat_word(feeder: &mut Feeder, ans: &mut SimpleCommand, core: &mut ShellCore) -> bool {
         let w = match Word::parse(feeder, core) {
             Some(w) => w,
-            _ => return false,
+            _       => return false,
         };
 
         if ans.args.len() == 0 && reserved(&w.text) {

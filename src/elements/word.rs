@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{Feeder, ShellCore};
+use crate::elements::subword;
 
 #[derive(Debug)]
 pub struct Word {
@@ -18,14 +19,13 @@ impl Word {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Word> {
-        let mut ans = Word::new();
+        let sw = match subword::parse(feeder, core) {
+            Some(sw) => sw,
+            _        => return None, 
+        };
 
-        let arg_len = feeder.scanner_word(core);
-        if arg_len == 0 {
-            return None;
-        }
- 
-        ans.text = feeder.consume(arg_len);
+        let mut ans = Word::new();
+        ans.text = sw.get_text();
         Some(ans)
     }
 }
