@@ -42,6 +42,10 @@ impl Feeder {
     }
 
     pub fn scanner_word(&mut self, core: &mut ShellCore) -> usize {
+        self.scanner_word_give_ng(core, " \t\n;&|()<>")
+    }
+
+    fn scanner_word_give_ng(&mut self, core: &mut ShellCore, ng: &str) -> usize {
         if self.remaining.starts_with("#") {
             return 0;
         }
@@ -52,7 +56,7 @@ impl Feeder {
             if &self.remaining[ans..] == "\\\n" {
                 next_line = true;
                 break;
-            }else if let Some(_) = " \t\n;&|()<>".find(ch) {
+            }else if let Some(_) = ng.find(ch) {
                 break;
             }
             ans += ch.len_utf8();
@@ -60,7 +64,7 @@ impl Feeder {
 
         if next_line {
             self.feed_and_connect(core);
-            return self.scanner_word(core);
+            return self.scanner_word_give_ng(core, ng);
         }
         ans
     }
