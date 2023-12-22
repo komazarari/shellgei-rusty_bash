@@ -20,14 +20,16 @@ impl Word {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Word> {
-        let sw = match subword::parse(feeder, core) {
-            Some(sw) => sw,
-            _        => return None, 
-        };
-
         let mut ans = Word::new();
-        ans.text = sw.get_text();
-        ans.subwords.push(sw);
-        Some(ans)
+        while let Some(sw) = subword::parse(feeder, core) {
+            ans.text += &sw.get_text();
+            ans.subwords.push(sw);
+        }
+
+        if ans.text.len() == 0 {
+            None
+        }else{
+            Some(ans)
+        }
     }
 }
