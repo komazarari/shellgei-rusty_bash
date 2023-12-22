@@ -42,13 +42,14 @@ impl Feeder {
     }
 
     pub fn scanner_word(&mut self, core: &mut ShellCore) -> usize {
-        self.scanner_word_give_ng(core, " \t\n;&|()<>")
-    }
-
-    fn scanner_word_give_ng(&mut self, core: &mut ShellCore, ng: &str) -> usize {
         if self.remaining.starts_with("#") {
             return 0;
         }
+
+        let ng = match core.word_nest.last().unwrap().0.as_ref() {
+            "{" => " \t\n;&|()<>{},",
+            _ => " \t\n;&|()<>",
+        };
 
         let mut next_line = false; 
         let mut ans = 0;
@@ -64,7 +65,7 @@ impl Feeder {
 
         if next_line {
             self.feed_and_connect(core);
-            return self.scanner_word_give_ng(core, ng);
+            return self.scanner_word(core);
         }
         ans
     }
