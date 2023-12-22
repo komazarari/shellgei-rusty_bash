@@ -38,6 +38,7 @@ impl BraceSubword {
         if ! feeder.starts_with("{") {
             return None;
         }
+        //TODO: implement rewind
 
         core.word_nest.push(("{".to_string(), "}".to_string()));
         let mut ans = Self::new();
