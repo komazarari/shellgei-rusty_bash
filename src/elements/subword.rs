@@ -7,6 +7,7 @@
 // pub mod Variable;
 
 use crate::ShellCore;
+use crate::elements::word::Word;
 use std::fmt;
 use std::fmt::Debug;
 
@@ -17,5 +18,7 @@ impl Debug for dyn Subword {
 }
 
 pub trait Subword {
-    fn eval(&mut self, _: &mut ShellCore) -> Vec<Vec<String>>;
+    fn eval(&mut self, _: &mut ShellCore) -> Word;
+    fn brace_expansion(&mut self, _: &mut ShellCore) -> Vec<Word>;
+    fn expansion(&mut self, _: &mut ShellCore) -> Vec<Word>;
 }
