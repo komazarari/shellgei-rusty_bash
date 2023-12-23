@@ -62,6 +62,7 @@ impl Word {
     }
 
     pub fn eval(&mut self) -> Vec<String> {
+        self.evaluated = vec![];
         for i in 0..self.subwords.len() {
             self.append(i);
         }
