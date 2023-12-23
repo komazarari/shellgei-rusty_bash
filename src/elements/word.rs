@@ -5,10 +5,12 @@ use crate::{Feeder, ShellCore};
 use crate::elements::subword;
 use crate::elements::subword::Subword;
 
+pub type Subwords = Vec<Box<dyn Subword>>;
+
 #[derive(Debug)]
 pub struct Word {
     pub text: String,
-    pub subwords: Vec<Box<dyn Subword>>,
+    pub subwords: Subwords,
 }
 
 impl Word {
@@ -21,10 +23,6 @@ impl Word {
 
     pub fn eval(&self) -> Vec<String> {
         vec![self.text.clone()]
-    }
-
-    pub fn append(&mut self, sub: Box<dyn Subword>) {
-        self.subwords.push(sub);
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Word> {
