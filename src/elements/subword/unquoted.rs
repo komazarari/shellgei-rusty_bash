@@ -4,9 +4,9 @@
 use crate::{ShellCore, Feeder};
 use super::Subword;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct UnquotedSubword {
-    text: String,
+    pub text: String,
 }
 
 impl Subword for UnquotedSubword {
@@ -17,6 +17,12 @@ impl UnquotedSubword {
     fn new() -> UnquotedSubword {
         UnquotedSubword {
             text: String::new(),
+        }
+    }
+
+    pub fn new_with_text(text: String) -> UnquotedSubword {
+        UnquotedSubword {
+            text: text,
         }
     }
 

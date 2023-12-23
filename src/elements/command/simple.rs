@@ -22,20 +22,25 @@ fn reserved(w: &str) -> bool {
 #[derive(Debug)]
 pub struct SimpleCommand {
     text: String,
-    args: Vec<Word>,
+    words: Vec<Word>,
+    args: Vec<String>,
     redirects: Vec<Redirect>,
     force_fork: bool,
 }
 
 impl Command for SimpleCommand {
     fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
-        if self.args.len() == 0 {
+        if self.words.len() == 0 {
             return None;
+        }
+
+        for a in &self.words {
+            self.args.extend(a.eval());
         }
 
         if self.force_fork 
         || pipe.is_connected() 
-        || ! core.builtins.contains_key(&self.args[0].text) {
+        || ! core.builtins.contains_key(&self.args[0]) {
             self.fork_exec(core, pipe)
         }else{
             self.nofork_exec(core);
@@ -44,17 +49,15 @@ impl Command for SimpleCommand {
     }
 
     fn run_command(&mut self, core: &mut ShellCore, fork: bool) {
-        let mut args = self.args.iter().map(|e| e.text.clone()).collect();
-
         if ! fork {
-            core.run_builtin(&mut args);
+            core.run_builtin(&mut self.args);
             return;
         }
 
-        if core.run_builtin(&mut args) {
+        if core.run_builtin(&mut self.args) {
             core.exit()
         }else{
-            Self::exec_external_command(&mut args)
+            Self::exec_external_command(&mut self.args)
         }
     }
 
@@ -64,15 +67,15 @@ impl Command for SimpleCommand {
 }
 
 impl SimpleCommand {
-    fn exec_external_command(args: &mut Vec<String>) -> ! {
-        let cargs = Self::to_cargs(args);
-        match unistd::execvp(&cargs[0], &cargs) {
+    fn exec_external_command(words: &mut Vec<String>) -> ! {
+        let cwords = Self::to_cwords(words);
+        match unistd::execvp(&cwords[0], &cwords) {
             Err(Errno::EACCES) => {
-                println!("sush: {}: Permission denied", &args[0]);
+                println!("sush: {}: Permission denied", &words[0]);
                 process::exit(126)
             },
             Err(Errno::ENOENT) => {
-                println!("{}: command not found", &args[0]);
+                println!("{}: command not found", &words[0]);
                 process::exit(127)
             },
             Err(err) => {
@@ -83,8 +86,18 @@ impl SimpleCommand {
         }
     }
 
-    fn to_cargs(args: &mut Vec<String>) -> Vec<CString> {
-        args.iter()
+    /*
+    fn eval(&self) -> Vec<String> {
+        let mut ans = vec![];
+        for a in self.words {
+            ans.append(a.eval());
+        }
+
+        ans
+    }*/
+
+    fn to_cwords(words: &mut Vec<String>) -> Vec<CString> {
+        words.iter()
             .map(|a| CString::new(a.to_string()).unwrap())
             .collect()
     }
@@ -92,24 +105,25 @@ impl SimpleCommand {
     fn new() -> SimpleCommand {
         SimpleCommand {
             text: String::new(),
+            words: vec![],
             args: vec![],
             redirects: vec![],
             force_fork: false,
         }
     }
  
-    fn eat_word(feeder: &mut Feeder, ans: &mut SimpleCommand, core: &mut ShellCore) -> bool {
+    fn eat_words(feeder: &mut Feeder, ans: &mut SimpleCommand, core: &mut ShellCore) -> bool {
         let w = match Word::parse(feeder, core) {
             Some(w) => w,
             _       => return false,
         };
 
-        if ans.args.len() == 0 && reserved(&w.text) {
+        if ans.words.len() == 0 && reserved(&w.text) {
             return false;
         }
  
         ans.text += &w.text;
-        ans.args.push(w);
+        ans.words.push(w);
         true
     }
 
@@ -120,12 +134,12 @@ impl SimpleCommand {
         loop {
             command::eat_blank_with_comment(feeder, core, &mut ans.text);
             if ! command::eat_redirect(feeder, core, &mut ans.redirects, &mut ans.text)
-                && ! Self::eat_word(feeder, &mut ans, core) {
+                && ! Self::eat_words(feeder, &mut ans, core) {
                 break;
             }
         }
 
-        if ans.args.len() + ans.redirects.len() > 0 {
+        if ans.words.len() + ans.redirects.len() > 0 {
             feeder.pop_backup();
             Some(ans)
         }else{

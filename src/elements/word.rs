@@ -19,6 +19,14 @@ impl Word {
         }
     }
 
+    pub fn eval(&self) -> Vec<String> {
+        vec![self.text.clone()]
+    }
+
+    pub fn append(&mut self, sub: Box<dyn Subword>) {
+        self.subwords.push(sub);
+    }
+
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Word> {
         let mut ans = Word::new();
         while let Some(sw) = subword::parse(feeder, core) {
