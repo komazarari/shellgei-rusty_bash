@@ -18,6 +18,7 @@ impl Debug for dyn Subword {
 
 pub trait Subword {
     fn get_text(&self) -> String;
+    fn eval(&mut self) -> Vec<Vec<String>>;
 }
 
 pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Subword>> {

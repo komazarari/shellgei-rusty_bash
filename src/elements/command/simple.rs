@@ -34,7 +34,7 @@ impl Command for SimpleCommand {
             return None;
         }
 
-        for a in &self.words {
+        for a in &mut self.words {
             self.args.extend(a.eval());
         }
 

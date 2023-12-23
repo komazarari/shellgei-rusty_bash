@@ -4,33 +4,43 @@
 use crate::{ShellCore, Feeder};
 use crate::elements::subword;
 use crate::elements::subword::UnquotedSubword;
+use crate::elements::word::Word;
 use super::Subword;
-use crate::elements::word::Subwords;
 
 #[derive(Debug)]
 pub struct BraceSubword {
     text: String,
-    subwords: Vec<Subwords>,
-    //words: Vec<Word>,
+    words: Vec<Word>,
 }
 
 impl Subword for BraceSubword {
     fn get_text(&self) -> String { self.text.clone() }
+
+    fn eval(&mut self) -> Vec<Vec<String>> { 
+        let mut ans = vec![];
+        for w in self.words.iter_mut() {
+            ans.push(w.eval());
+        }
+
+        ans
+    }
 }
 
 impl BraceSubword {
     fn new() -> BraceSubword {
         BraceSubword {
             text: String::new(),
-            subwords: vec![],
+            words: vec![],
         }
     }
 
     fn new_at_failure() -> BraceSubword {
         let sub = Box::new(UnquotedSubword::new_with_text("{".to_string()));
+        let mut word = Word::new();
+        word.subwords.push(sub);
         BraceSubword {
             text: "{".to_string(),
-            subwords: vec![vec![sub]],
+            words: vec![word],
         }
     }
 
@@ -39,10 +49,10 @@ impl BraceSubword {
         match subword::parse(feeder, core) {
             Some(w) => {
                 ans.text += &w.get_text();
-                if ans.subwords.len() == counter {
-                    ans.subwords.push(vec![]);
+                if ans.words.len() == counter {
+                    ans.words.push(Word::new());
                 }
-                ans.subwords[counter].push(w);
+                ans.words[counter].subwords.push(w);
                 true
             },
             _       => false,
@@ -73,12 +83,13 @@ impl BraceSubword {
         }
 
         core.word_nest.pop();
-        if ! ans.text.ends_with("}") || ans.subwords.len() < 2 {
+        if ! ans.text.ends_with("}") || ans.words.len() < 2 {
             feeder.rewind();
             feeder.consume(1);
             Some(Self::new_at_failure())
         }else {
             feeder.pop_backup();
+            //dbg!("{:?}", &ans);
             Some(ans)
         }
     }

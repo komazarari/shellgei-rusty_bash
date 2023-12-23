@@ -4,13 +4,14 @@
 use crate::{ShellCore, Feeder};
 use super::Subword;
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct UnquotedSubword {
     pub text: String,
 }
 
 impl Subword for UnquotedSubword {
     fn get_text(&self) -> String { self.text.clone() }
+    fn eval(&mut self) -> Vec<Vec<String>> { vec![vec![self.text.clone()]] }
 }
 
 impl UnquotedSubword {
