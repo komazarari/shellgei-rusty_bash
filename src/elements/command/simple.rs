@@ -35,7 +35,7 @@ impl Command for SimpleCommand {
         }
 
         for a in &mut self.words {
-            self.args.extend(a.eval());
+            self.args.extend(a.get_args());
         }
 
         if self.force_fork 

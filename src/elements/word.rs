@@ -9,7 +9,7 @@ use crate::elements::subword::Subword;
 pub struct Word {
     pub text: String,
     pub subwords: Vec<Box<dyn Subword>>,
-    pub evaluated: Vec<Vec<String>>,
+    //pub evaluated: Vec<Vec<String>>,
 }
 
 fn connect_args(left: &Vec<String>, right: &Vec<String>) -> Vec<String> {
@@ -35,44 +35,55 @@ impl Word {
         Word {
             text: String::new(),
             subwords: vec![],
-            evaluated: vec![],
         }
     }
 
-    fn append(&mut self, subword_pos: usize) {
-        let subword = &mut self.subwords[subword_pos];
+    fn append(&mut self, evaluated: &Vec<Vec<String>>, subword_pos: usize) -> Vec<Vec<String>> {
+        let rights = self.subwords[subword_pos].eval();
+        //dbg!("{:?}", &rights);
 
-        if self.evaluated.len() == 0 { //先頭のsubword
-            self.evaluated = subword.eval();
-            return;
+        if evaluated.len() == 0 { //先頭のsubword
+            return rights.to_vec();
         }
 
-        let len = self.evaluated.len();
+        let len = evaluated.len();
         let mut new_evaluated = vec![];
         for i in 0..len {
-            let rights = subword.eval();
             let right_len = rights.len();
 
             for r in 0..right_len {
-                new_evaluated.push(connect_args(&self.evaluated[i], &rights[r]));
+                new_evaluated.push(connect_args(&evaluated[i], &rights[r]));
+                //dbg!("{:?}", &evaluated[i]);
+                //dbg!("{:?}", &rights[r]);
+                //dbg!("{:?}", &new_evaluated);
             }
         }
 
-        self.evaluated = new_evaluated;
+        new_evaluated
     }
 
-    pub fn eval(&mut self) -> Vec<String> {
-        self.evaluated = vec![];
-        for i in 0..self.subwords.len() {
-            self.append(i);
+    pub fn get_args(&mut self) -> Vec<String> {
+        let mut tmp = vec![];
+        let evaluated = self.eval();
+        for v in &evaluated {
+            tmp.extend(v.to_vec());
         }
-
+        tmp
+/*
         let mut ans = vec![];
-        for v in &self.evaluated {
-            ans.extend(v.to_vec());
+        for v in &tmp {
+            ans.extend(v);
         }
-
         ans
+        */
+    }
+
+    pub fn eval(&mut self) -> Vec<Vec<String>> {
+        let mut evaluated: Vec<Vec<String>> = vec![];
+        for i in 0..self.subwords.len() {
+            evaluated = self.append(&evaluated, i);
+        }
+        evaluated
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Word> {

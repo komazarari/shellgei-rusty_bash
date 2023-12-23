@@ -2,7 +2,6 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::elements::subword;
 use crate::elements::subword::UnquotedSubword;
 use crate::elements::word::Word;
 use super::Subword;
@@ -19,7 +18,7 @@ impl Subword for BraceSubword {
     fn eval(&mut self) -> Vec<Vec<String>> { 
         let mut ans = vec![];
         for w in self.words.iter_mut() {
-            ans.push(w.eval());
+            ans.extend(w.eval()); 
         }
 
         ans
@@ -44,18 +43,14 @@ impl BraceSubword {
         }
     }
 
-    fn eat_word(feeder: &mut Feeder, ans: &mut BraceSubword,
-                core: &mut ShellCore, counter: usize) -> bool {
-        match subword::parse(feeder, core) {
+    fn eat_word(feeder: &mut Feeder, ans: &mut BraceSubword, core: &mut ShellCore) -> bool {
+        match Word::parse(feeder, core) {
             Some(w) => {
-                ans.text += &w.get_text();
-                if ans.words.len() == counter {
-                    ans.words.push(Word::new());
-                }
-                ans.words[counter].subwords.push(w);
+                ans.text += &w.text;
+                ans.words.push(w);
                 true
             },
-            _       => false,
+            _  => false,
         }
     }
 
@@ -68,11 +63,9 @@ impl BraceSubword {
         core.word_nest.push("{".to_string());
         let mut ans = Self::new();
         ans.text = feeder.consume(1); // {
-        let mut counter = 0;
-        while Self::eat_word(feeder, &mut ans, core, counter) {
+        while Self::eat_word(feeder, &mut ans, core) {
             if feeder.starts_with(",") {
                 ans.text += &feeder.consume(1); 
-                counter += 1;
                 continue;
             }
 
@@ -89,7 +82,7 @@ impl BraceSubword {
             Some(Self::new_at_failure())
         }else {
             feeder.pop_backup();
-            //dbg!("{:?}", &ans);
+//            dbg!("{:?}", &ans);
             Some(ans)
         }
     }
