@@ -62,7 +62,9 @@ impl BraceSubword {
 
         core.word_nest.push("{".to_string());
         let mut ans = Self::new();
+        let mut closed = false;
         ans.text = feeder.consume(1); // {
+
         while Self::eat_word(feeder, &mut ans, core) {
             if feeder.starts_with(",") {
                 ans.text += &feeder.consume(1); 
@@ -71,12 +73,13 @@ impl BraceSubword {
 
             if feeder.starts_with("}") {
                 ans.text += &feeder.consume(1); 
+                closed = true;
             }
             break;
         }
 
         core.word_nest.pop();
-        if ! ans.text.ends_with("}") || ans.words.len() < 2 {
+        if ! closed || ans.words.len() < 2 {
             feeder.rewind();
             feeder.consume(1);
             Some(Self::new_at_failure())

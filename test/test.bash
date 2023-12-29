@@ -321,4 +321,24 @@ res=$($com <<< 'touch /tmp/rusty_bash ; while [ -f /tmp/rusty_bash ] ; do echo w
 res=$($com <<< 'rm -f /tmp/rusty_bash ; while [ -f /tmp/rusty_bash ] ; do echo wait ; rm /tmp/rusty_bash ; done')
 [ "$res" == "" ] || err $LINENO
 
+### ARG TEST ###
+
+# brace
+
+res=$($com <<< 'echo {a,b}c')
+[ "$res" == "ac bc" ] || err $LINENO
+
+res=$($com <<< 'echo c{a,b}')
+[ "$res" == "ca cb" ] || err $LINENO
+
+res=$($com <<< 'echo c{a,b')
+[ "$res" == "c{a,b" ] || err $LINENO
+
+res=$($com <<< 'echo {a,b,c{d,e}f,g{h,i{j,k}}}')
+[ "$res" == "a b cdf cef gh gij gik" ] || err $LINENO
+
+res=$($com <<< 'echo {a,b,c{d,e}f,g{h,i{j,k}}')
+[ "$res" == "{a,b,cdf,gh {a,b,cdf,gij {a,b,cdf,gik {a,b,cef,gh {a,b,cef,gij {a,b,cef,gik" ] || err $LINENO
+
+
 echo OK $0
