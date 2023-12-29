@@ -53,9 +53,6 @@ impl Word {
 
             for r in 0..right_len {
                 new_evaluated.push(connect_args(&evaluated[i], &rights[r]));
-                //dbg!("{:?}", &evaluated[i]);
-                //dbg!("{:?}", &rights[r]);
-                //dbg!("{:?}", &new_evaluated);
             }
         }
 
@@ -69,13 +66,6 @@ impl Word {
             tmp.extend(v.to_vec());
         }
         tmp
-/*
-        let mut ans = vec![];
-        for v in &tmp {
-            ans.extend(v);
-        }
-        ans
-        */
     }
 
     pub fn eval(&mut self) -> Vec<Vec<String>> {
