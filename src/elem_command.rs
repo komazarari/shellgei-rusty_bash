@@ -7,6 +7,8 @@ use nix::unistd;
 use nix::unistd::ForkResult;
 use nix::sys::wait;
 use std::ffi::CString;
+use std::env;
+use std::path::Path;
 
 pub struct Command {
     text: String,
@@ -18,6 +20,14 @@ impl Command {
     pub fn exec(&mut self, _core: &mut ShellCore) { //引数_coreはまだ使いません
         if self.text == "exit\n" {
             process::exit(0);
+        }
+
+        if self.args[0] == "cd" && self.args.len() > 1 {
+            let path = Path::new(&self.args[1]);
+            if env::set_current_dir(&path).is_err() {
+                println!("Failed to change directory.");
+            }
+            return;
         }
 
         match unsafe{unistd::fork()} {
