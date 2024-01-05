@@ -7,7 +7,9 @@ use nix::unistd::execvp;
 use std::ffi::CString;
 
 pub struct Command {
-    pub text: String,
+    text: String,
+    args: Vec<String>,
+    cargs: Vec<CString>,
 }
 
 impl Command {
@@ -16,18 +18,27 @@ impl Command {
             process::exit(0);
         }
 
-        let mut words = vec![];
-        for w in self.text.trim_end().split(' ') {
-            words.push(CString::new(w.to_string()).unwrap());
-        };
-        println!("{:?}", words);
-        if words.len() > 0 {
-            println!("{:?}", execvp(&words[0], &words));
-        }
+        println!("{:?}", execvp(&self.cargs[0], &self.cargs));
     }
 
     pub fn parse(feeder: &mut Feeder, _core: &mut ShellCore) -> Option<Command> {
         let line = feeder.consume(feeder.remaining.len());
-        Some( Command {text: line} )
+
+        let args: Vec<String> = line
+            .trim_end()
+            .split(' ')
+            .map(|s| s.to_string())
+            .collect();
+
+        let cargs: Vec<CString> = args
+            .iter()
+            .map(|w| CString::new(w.clone()).unwrap())
+            .collect();
+
+        if args.len() > 0 {
+            Some( Command {text: line, args, cargs} )
+        } else {
+            None
+        }
     }
 }
