@@ -3,6 +3,8 @@
 
 use std::process;
 use crate::{ShellCore,Feeder};
+use nix::unistd::execvp;
+use std::ffi::CString;
 
 pub struct Command {
     pub text: String,
@@ -16,9 +18,12 @@ impl Command {
 
         let mut words = vec![];
         for w in self.text.trim_end().split(' ') {
-            words.push(w);
+            words.push(CString::new(w.to_string()).unwrap());
         };
         println!("{:?}", words);
+        if words.len() > 0 {
+            println!("{:?}", execvp(&words[0], &words));
+        }
     }
 
     pub fn parse(feeder: &mut Feeder, _core: &mut ShellCore) -> Option<Command> {
