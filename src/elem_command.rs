@@ -13,7 +13,12 @@ impl Command {
         if self.text == "exit\n" {
             process::exit(0);
         }
-        print!("{}", self.text);
+
+        let mut words = vec![];
+        for w in self.text.trim_end().split(' ') {
+            words.push(w);
+        };
+        println!("{:?}", words);
     }
 
     pub fn parse(feeder: &mut Feeder, _core: &mut ShellCore) -> Option<Command> {
