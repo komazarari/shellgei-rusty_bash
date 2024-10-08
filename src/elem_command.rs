@@ -10,7 +10,7 @@ use nix::unistd::ForkResult;
 use nix::errno::Errno;
 
 pub struct Command {
-    _text: String,
+    pub text: String,
     args: Vec<String>,
     cargs: Vec<CString>,
 }
@@ -61,7 +61,7 @@ impl Command {
             .collect();
 
         if args.len() > 0 { // 1つ以上の単語があれば Command を作成する
-            Some( Command {_text: line, args, cargs} )
+            Some( Command {text: line, args, cargs} )
         } else {
             None
         }
