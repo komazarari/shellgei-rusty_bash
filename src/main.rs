@@ -3,8 +3,8 @@
 
 mod core;
 mod elem_command;
-mod term;
-mod utils;
+//mod term;
+//mod utils;
 mod feeder;
 
 use std::{env, process};

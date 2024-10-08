@@ -1,14 +1,13 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use std::process;
 use crate::{ShellCore,Feeder};
 use nix::unistd;
+use std::ffi::CString;
+use std::process;
+
 use nix::unistd::ForkResult;
 use nix::errno::Errno;
-use std::ffi::CString;
-use std::env;
-use std::path::Path;
 
 pub struct Command {
     _text: String,
@@ -17,34 +16,8 @@ pub struct Command {
 }
 
 impl Command {
-    pub fn exec(&mut self, core: &mut ShellCore) { //引数_coreはまだ使いません
-        if self.args[0] == "exit" {
-            eprintln!("exit!");
-            if self.args.len() > 1 {
-                core.vars.insert("?".to_string(), self.args[1].clone());
-            }
-
-            let exit_status = match core.vars["?"].parse::<i32>() {
-                Ok(n) => n%256,
-                Err(_) => {
-                    eprintln!("sh: exit: {}: numeric argument required", core.vars["?"]);
-                    2
-                }
-            };
-            process::exit(exit_status);
-        }
-
-        if self.args[0] == "cd" && self.args.len() > 1 {
-            let path = Path::new(&self.args[1]);
-            let exit_status = match env::set_current_dir(&path) {
-                Ok(_) => 0,
-                Err(_) => 1,
-            };
-            if exit_status != 0 {
-                println!("Failed to change directory.");
-            }
-
-            core.vars.insert("?".to_string(), exit_status.to_string());
+    pub fn exec(&mut self, core: &mut ShellCore) {
+        if core.run_builtin(&mut self.args) {
             return;
         }
 
@@ -87,7 +60,7 @@ impl Command {
             .map(|w| CString::new(w.clone()).unwrap())
             .collect();
 
-        if args.len() > 0 {
+        if args.len() > 0 { // 1つ以上の単語があれば Command を作成する
             Some( Command {_text: line, args, cargs} )
         } else {
             None
