@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 mod term;
+mod scanner;
 
 use crate::ShellCore;
 //use crate::term;
@@ -24,6 +25,10 @@ impl Feeder {
         self.remaining = self.remaining[cutpos..].to_string();
 
         cut
+    }
+
+    pub fn rewind(&mut self, backup: Feeder) {
+        self.remaining = backup.remaining;
     }
 
     pub fn feed_line(&mut self, core: &mut ShellCore) -> bool {

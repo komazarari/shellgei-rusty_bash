@@ -2,7 +2,6 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 mod core;
-mod elem_command;
 mod feeder;
 mod elements;
 
@@ -41,8 +40,7 @@ fn main_loop(core: &mut ShellCore) {
     loop {
         if feeder.feed_line(core) {
             match Script::parse(&mut feeder, core) {
-                //Some(mut c) => c.exec(core),
-                Some(mut s) => s.jobs[0].pipelines[0].commands[0].exec(core),
+                Some(mut s) => s.exec(core),
                 None => process::exit(1),
             }
         }
